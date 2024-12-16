@@ -15,13 +15,11 @@ async def measure_runtime() -> float:
     """
     start_time = time.perf_counter()
 
-    # Crear las tareas asincrónicas
     task1 = asyncio.create_task(async_comprehension())
     task2 = asyncio.create_task(async_comprehension())
     task3 = asyncio.create_task(async_comprehension())
     task4 = asyncio.create_task(async_comprehension())
 
-    # Aguardar las tareas manualmente
     await task1
     await task2
     await task3
