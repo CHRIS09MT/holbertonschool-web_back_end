@@ -1,2 +1,2 @@
 //my comment
-use my_db | mongo
+use my_db
