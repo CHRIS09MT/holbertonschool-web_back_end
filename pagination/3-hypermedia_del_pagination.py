@@ -19,6 +19,7 @@ class Server:
 
     def dataset(self) -> List[List]:
         """Cached dataset"""
+
         if self.__dataset is None:
             with open(self.DATA_FILE) as f:
                 reader = csv.reader(f)
@@ -29,37 +30,41 @@ class Server:
 
     def indexed_dataset(self) -> Dict[int, List]:
         """Dataset indexed by sorting position, starting at 0"""
+
         if self.__indexed_dataset is None:
             dataset = self.dataset()
             truncated_dataset = dataset[:1000]
-            self.__indexed_dataset = {
-                i: truncated_dataset[i] for i in range(len(truncated_dataset))
-            }
+            self.__indexed_dataset = {i: dataset[i] for i in range(len(dataset))}
         return self.__indexed_dataset
 
     def get_hyper_index(self, index: int = None, page_size: int = 10) -> Dict:
         """
-        Returns a page of the dataset with indices resilient to deletions.
+        Return deletion-resilient hypermedia pagination metadata
         """
 
-        assert index is not None and 0 <= index < len(
-            self.indexed_dataset()
-        ), "Index out of range."
+        indexed_dataset = self.indexed_dataset()
+
+        assert index is None or (
+            isinstance(index, int) and index >= 0
+        ), "Index must be a non-negative integer"
+
+        if index is None:
+            index = 0
 
         data = []
         current_index = index
-        indexed_data_keys = sorted(self.__indexed_dataset.keys())
 
-        while len(data) < page_size and current_index < len(indexed_data_keys):
-            key = indexed_data_keys[current_index]
-            if key in self.__indexed_dataset:
-                data.append(self.__indexed_dataset[key])
+        while len(data) < page_size and current_index < len(indexed_dataset):
+            if current_index in indexed_dataset:
+                data.append(indexed_dataset[current_index])
             current_index += 1
 
-        next_index = current_index if current_index < len(indexed_data_keys) else None
+        next_index = current_index
+        while next_index < len(indexed_dataset) and next_index not in indexed_dataset:
+            next_index += 1
 
-        # Custom message for test validation
-        print("it is delete-resilient!")
+        if next_index >= len(indexed_dataset):
+            next_index = None
 
         return {
             "index": index,
