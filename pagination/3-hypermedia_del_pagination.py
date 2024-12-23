@@ -33,16 +33,16 @@ class Server:
 
         if self.__indexed_dataset is None:
             dataset = self.dataset()
-            truncated_dataset = dataset[:1000]
-            self.__indexed_dataset = {i: dataset[i] for i in range(len(dataset))}
-        return self.__indexed_dataset
+            trunc_dataset = dataset[:1000]
+            self.__indx_dataset = {i: dataset[i] for i in range(len(dataset))}
+        return self.__indx_dataset
 
     def get_hyper_index(self, index: int = None, page_size: int = 10) -> Dict:
         """
         Return deletion-resilient hypermedia pagination metadata
         """
 
-        indexed_dataset = self.indexed_dataset()
+        indexd_data = self.indexed_dataset()
 
         assert index is None or (
             isinstance(index, int) and index >= 0
@@ -54,16 +54,16 @@ class Server:
         data = []
         current_index = index
 
-        while len(data) < page_size and current_index < len(indexed_dataset):
-            if current_index in indexed_dataset:
-                data.append(indexed_dataset[current_index])
+        while len(data) < page_size and current_index < len(indexd_data):
+            if current_index in indexd_data:
+                data.append(indexd_data[current_index])
             current_index += 1
 
         next_index = current_index
-        while next_index < len(indexed_dataset) and next_index not in indexed_dataset:
+        while next_index < len(indexd_data) and next_index not in indexd_data:
             next_index += 1
 
-        if next_index >= len(indexed_dataset):
+        if next_index >= len(indexd_data):
             next_index = None
 
         return {
