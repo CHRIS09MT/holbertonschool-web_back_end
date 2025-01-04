@@ -1,5 +1,5 @@
 //deleting all documents of the collection
-db.school.remove(
+db.school.deleteOne(
 	{
 		"name": "Holberton school"
 	}
