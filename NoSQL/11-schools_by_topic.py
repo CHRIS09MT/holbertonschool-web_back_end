@@ -9,4 +9,4 @@ def schools_by_topic(mongo_collection, topic):
     searching
     """
 
-    return mongo_collection.find_one({"topic": topic})
+    return mongo_collection.find({"topic": topic})
