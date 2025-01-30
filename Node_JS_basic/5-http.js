@@ -1,6 +1,6 @@
 const http = require('http');
 const url = require('url');
-const countStudents = require('./3-read_file_async');
+const countStudents = require('./3-read_file_async');  // Este debe devolver un objeto con las listas de estudiantes
 
 const databaseFile = process.argv[2];
 
@@ -16,10 +16,12 @@ const app = http.createServer((req, res) => {
 
     countStudents(databaseFile)
       .then((students) => {
+        // Asegurémonos de que los estudiantes se estructuren correctamente
         const totalStudents = students.CS.length + students.SWE.length;
         const csStudents = students.CS.join(', ');
         const sweStudents = students.SWE.join(', ');
 
+        // Ahora formateamos la salida correctamente
         res.write(`Number of students: ${totalStudents}\n`);
         res.write(`Number of students in CS: ${students.CS.length}. List: ${csStudents}\n`);
         res.write(`Number of students in SWE: ${students.SWE.length}. List: ${sweStudents}\n`);
