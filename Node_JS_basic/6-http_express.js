@@ -1,4 +1,5 @@
 const express = require('express');
+
 const app = express();
 
 app.get('/', (req, res) => {
@@ -6,7 +7,7 @@ app.get('/', (req, res) => {
 });
 
 app.all('*', (req, res) => {
-  res.status(404).send('<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Error</title></head><body><pre>Cannot GET ' + req.originalUrl + '</pre></body></html>');
+  res.status(404).send(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Error</title></head><body><pre>Cannot GET ${req.originalUrl}</pre></body></html>`);
 });
 
 app.listen(1245, () => {
