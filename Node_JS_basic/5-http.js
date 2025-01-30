@@ -1,12 +1,12 @@
 const http = require('http');
 const url = require('url');
-const countStudents = require('./3-read_file_async');  // Este debería retornar un objeto con los estudiantes
+const countStudents = require('./3-read_file_async');
 
 const databaseFile = process.argv[2];
 
 const app = http.createServer((req, res) => {
   const reqUrl = url.parse(req.url, true).pathname;
-  
+
   if (reqUrl === '/') {
     res.writeHead(200, { 'Content-Type': 'text/plain' });
     res.end('Hello Holberton School!');
@@ -16,7 +16,6 @@ const app = http.createServer((req, res) => {
 
     countStudents(databaseFile)
       .then((students) => {
-        // Aquí estructuramos la respuesta para incluir las estadísticas requeridas
         const totalStudents = students.CS.length + students.SWE.length;
         const csStudents = students.CS.join(', ');
         const sweStudents = students.SWE.join(', ');
@@ -27,7 +26,8 @@ const app = http.createServer((req, res) => {
         res.end();
       })
       .catch((error) => {
-        res.end(error.message);
+        res.statusCode = 500;
+        res.end('Error reading the database');
       });
   } else {
     res.writeHead(404, { 'Content-Type': 'text/plain' });
