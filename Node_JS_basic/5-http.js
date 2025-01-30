@@ -1,11 +1,12 @@
 const http = require('http');
 const url = require('url');
-const countStudents = require('./3-read_file_async');
+const countStudents = require('./3-read_file_async');  // Este debería retornar un objeto con los estudiantes
 
 const databaseFile = process.argv[2];
 
 const app = http.createServer((req, res) => {
   const reqUrl = url.parse(req.url, true).pathname;
+  
   if (reqUrl === '/') {
     res.writeHead(200, { 'Content-Type': 'text/plain' });
     res.end('Hello Holberton School!');
@@ -14,8 +15,16 @@ const app = http.createServer((req, res) => {
     res.write('This is the list of our students\n');
 
     countStudents(databaseFile)
-      .then((data) => {
-        res.end(data);
+      .then((students) => {
+        // Aquí estructuramos la respuesta para incluir las estadísticas requeridas
+        const totalStudents = students.CS.length + students.SWE.length;
+        const csStudents = students.CS.join(', ');
+        const sweStudents = students.SWE.join(', ');
+
+        res.write(`Number of students: ${totalStudents}\n`);
+        res.write(`Number of students in CS: ${students.CS.length}. List: ${csStudents}\n`);
+        res.write(`Number of students in SWE: ${students.SWE.length}. List: ${sweStudents}\n`);
+        res.end();
       })
       .catch((error) => {
         res.end(error.message);
