@@ -1,4 +1,3 @@
-// full_server/utils.js
 import fs from 'fs/promises';
 
 async function readDatabase(filePath) {
