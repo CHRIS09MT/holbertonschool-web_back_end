@@ -1,44 +1,76 @@
 const http = require('http');
-const url = require('url');
-const countStudents = require('./3-read_file_async');  // Este debe devolver un objeto con las listas de estudiantes
+const fs = require('fs');
+const path = require('path');
+const readline = require('readline');
 
-const databaseFile = process.argv[2];
+// Helper function to read CSV and parse students
+function readCSV(filePath) {
+  return new Promise((resolve, reject) => {
+    const students = {
+      CS: [],
+      SWE: []
+    };
+    const rl = readline.createInterface({
+      input: fs.createReadStream(filePath),
+      crlfDelay: Infinity
+    });
 
-const app = http.createServer((req, res) => {
-  const reqUrl = url.parse(req.url, true).pathname;
+    rl.on('line', (line) => {
+      const [name, subject] = line.split(',');
+      if (name && subject) {
+        if (subject.trim() === 'CS') {
+          students.CS.push(name.trim());
+        } else if (subject.trim() === 'SWE') {
+          students.SWE.push(name.trim());
+        }
+      }
+    });
 
-  if (reqUrl === '/') {
-    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    rl.on('close', () => {
+      resolve(students);
+    });
+
+    rl.on('error', (error) => {
+      reject(error);
+    });
+  });
+}
+
+// HTTP server logic
+const app = http.createServer(async (req, res) => {
+  const url = req.url;
+  res.statusCode = 200;
+  res.setHeader('Content-Type', 'text/plain');
+
+  if (url === '/') {
     res.end('Hello Holberton School!');
-  } else if (reqUrl === '/students') {
-    res.writeHead(200, { 'Content-Type': 'text/plain' });
-    res.write('This is the list of our students\n');
+  } else if (url === '/students') {
+    const dbFilePath = process.argv[2]; // File passed in the command line
+    if (!dbFilePath) {
+      res.statusCode = 400;
+      return res.end('Database file not provided');
+    }
 
-    countStudents(databaseFile)
-      .then((students) => {
-        // Asegurémonos de que los estudiantes se estructuren correctamente
-        const totalStudents = students.CS.length + students.SWE.length;
-        const csStudents = students.CS.join(', ');
-        const sweStudents = students.SWE.join(', ');
+    try {
+      const students = await readCSV(dbFilePath);
 
-        // Ahora formateamos la salida correctamente
-        res.write(`Number of students: ${totalStudents}\n`);
-        res.write(`Number of students in CS: ${students.CS.length}. List: ${csStudents}\n`);
-        res.write(`Number of students in SWE: ${students.SWE.length}. List: ${sweStudents}\n`);
-        res.end();
-      })
-      .catch((error) => {
-        res.statusCode = 500;
-        res.end('Error reading the database');
-      });
+      res.write('This is the list of our students\n');
+      res.write(`Number of students: ${students.CS.length + students.SWE.length}\n`);
+      res.write(`Number of students in CS: ${students.CS.length}. List: ${students.CS.join(', ')}\n`);
+      res.write(`Number of students in SWE: ${students.SWE.length}. List: ${students.SWE.join(', ')}\n`);
+      res.end();
+    } catch (error) {
+      res.statusCode = 500;
+      res.end('Error reading the database');
+    }
   } else {
-    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.statusCode = 404;
     res.end('Not Found');
   }
 });
 
 app.listen(1245, () => {
-  console.log('Server is listening on port 1245');
+  console.log('Server is running on port 1245');
 });
 
 module.exports = app;
